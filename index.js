@@ -15,7 +15,7 @@ const connection = mysql.createConnection({
 });
 
 // VARIABLES
-const askNewEmployee = [
+const askEmployeeQuestions = [
   "What is the first name?",
   "What is the last name?",
   "What is their role?",
@@ -27,7 +27,7 @@ const roleQuery = `
   SELECT CONCAT(e.first_name, " ", e.last_name) AS full_name FROM employee e;
 `;
 
-const allStaff = `
+const allTheStaff = `
   SELECT e.id, e.first_name AS "First Name", e.last_name AS "Last Name", r.title, d.name AS "Department", IFNULL(r.salary, 'No Data') AS "Salary", CONCAT(m.first_name, " ", m.last_name) AS "Manager"
   FROM employee e
   LEFT JOIN roles r 
@@ -38,7 +38,7 @@ const allStaff = `
   ORDER BY e.id;
 `;
 
-const managerQuery = `
+const managerofQuery = `
   SELECT CONCAT(e.first_name, " ", e.last_name) AS full_name, r.title, d.name 
   FROM employee e 
   INNER JOIN roles r ON r.id = e.role_id 
