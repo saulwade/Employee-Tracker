@@ -9,7 +9,7 @@ const connectionConfig = {
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "771270sw",
+  password: "password",
   database: "employeeDB",
   multipleStatements: true,
 };
@@ -119,7 +119,7 @@ const handleAction = async (answer) => {
     badCompany();
   }
 };  
-    const updateEmpManagers = () => {
+  const updateEmpManagers = () => {
     const query = `SELECT e1.id, CONCAT(e1.first_name,' ', e1.last_name) AS "Employee Name", 
                     r.title AS "Current Role", d.name AS "Current Department",
                     CONCAT(e2.first_name,' ', e2.last_name) AS "Manager"
