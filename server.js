@@ -46,9 +46,9 @@ const badCompany = () => {
         "Add a department",
         "Add an employee",
         "Add a role",
-        "View a department",
+        "View departments",
         "View employees",
-        "View a role",
+        "View roles",
         "Update employee roles",
         "Update employee managers",
         "View employees by manager",
@@ -77,17 +77,14 @@ const handleAction = async (answer) => {
     case "Add a role":
       await addRole();
       break;
-    case "View a department":
+    case "View departments":
       await viewDepartments();
       break;
     case "View employees":
       await viewEmployees();
       break;
-    case "View a role":
+    case "View roles":
       await viewRoles();
-      break;
-    case "View employees by manager":
-      await viewEmpByManager();
       break;
     case "Update employee roles":
       await updateEmpRole();
@@ -115,72 +112,149 @@ const handleAction = async (answer) => {
       console.log(chalk.red(`Invalid action: ${answer.action}`));
       break;
   }
-  if (answer.action !== "View employees by manager" && answer.action !== "Update employee managers") {
+};
+
+const viewDepartments = () => {
+  const query = "SELECT * FROM department";
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+    console.table(chalk.blue("All Departments"), results);
     badCompany();
-  }
-};  
-  const updateEmpManagers = () => {
-    const query = `SELECT e1.id, CONCAT(e1.first_name,' ', e1.last_name) AS "Employee Name", 
-                    r.title AS "Current Role", d.name AS "Current Department",
-                    CONCAT(e2.first_name,' ', e2.last_name) AS "Manager"
-                    FROM employee e1
-                    INNER JOIN roles r ON r.id = e1.role_id
-                    INNER JOIN department d ON d.did = r.department_id
-                    INNER JOIN employee e2 ON e2.id = e1.manager_id
-                    ORDER BY e1.id`;
-    connection.query(query, (err, results) => {
-      if (err) throw err;
-  
-      console.table(chalk.blue("All Employees"), results);
-  
-      inquirer
-        .prompt([
-          {
-            name: "id",
-            type: "input",
-            message: "What is your employee ID?",
-          },
-          {
-            name: "manager",
-            type: "list",
-            choices: function () {
-              let choiceArr = results.map((choice) => choice["Employee Name"]);
-              return choiceArr;
-            },
-            message: "Select your new manager:",
-          },
-        ])
-        .then((answers) => {
-          const managerId = results.filter(
-            (item) => item["Employee Name"] === answers.manager
-          )[0].id;
-  
-          const query = `UPDATE employee SET manager_id = ? WHERE id = ?`;
-          connection.query(query, [managerId, answers.id], (err, results) => {
-            if (err) throw err;
-            console.log(results);
-            badCompany();
-          });
-        })
-        .catch((err) => {
-          throw err;
-        });
+  });
+};
+
+const addDepartment = () => {
+  inquirer
+    .prompt([
+      {
+        name: "name",
+        type: "input",
+        message: "What is the name of the new department?",
+      },
+    ])
+    .then((answers) => {
+      const query = "INSERT INTO department (name) VALUES (?)";
+      connection.query(query, [answers.name], (err, results) => {
+        if (err) throw err;
+        console.log(results);
+        badCompany();
+      });
+    })
+    .catch((err) => {
+      throw err;
     });
-  };
-  
-  const companyBudget = () => {
-    const query = `SELECT d.name AS "Department Name", SUM(r.salary) AS "Total Utilized Budget"
-                    FROM employee e
-                    INNER JOIN roles r ON r.id = e.role_id
-                    INNER JOIN department d ON d.did = r.department_id
-                    GROUP BY d.name`;
-    connection.query(query, (err, results) => {
-      if (err) throw err;
-      console.table(chalk.blue("Total Utilized Budget by Department"), results);
-      badCompany();
+};
+
+const viewRoles = () => {
+  const query = "SELECT * FROM roles";
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+    console.table(chalk.blue("All Roles"), results);
+    badCompany();
+  });
+};
+
+const addRole = () => {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "What is the title of the new role?",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "What is the salary of the new role?",
+      },
+      {
+        name: "department",
+        type: "input",
+        message: "What is the department ID of the new role?",
+      },
+    ])
+    .then((answers) => {
+      const query = "INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)";
+      connection.query(query, [answers.title, answers.salary, answers.department], (err, results) => {
+        if (err) throw err;
+        console.log(results);
+        badCompany();
+      });
+    })
+    .catch((err) => {
+      throw err;
     });
-  };
-  
-  // Start the application
-  badCompany();
-  
+};
+
+const viewEmployees = () => {
+  const query = "SELECT * FROM employee";
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+    console.table(chalk.blue("All Employees"), results);
+    badCompany();
+  });
+};
+
+const addEmployee = () => {
+  inquirer
+    .prompt([
+      {
+        name: "firstName",
+        type: "input",
+        message: "What is the employee's first name?",
+      },
+      {
+        name: "lastName",
+        type: "input",
+        message: "What is the employee's last name?",
+      },
+      {
+        name: "role",
+        type: "input",
+        message: "What is the employee's role ID?",
+      },
+      {
+        name: "manager",
+        type: "input",
+        message: "What is the employee's manager ID?",
+      },
+    ])
+    .then((answers) => {
+      const query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
+      connection.query(query, [answers.firstName, answers.lastName, answers.role, answers.manager], (err, results) => {
+        if (err) throw err;
+        console.log(results);
+        badCompany();
+      });
+    })
+    .catch((err) => {
+      throw err;
+    });
+};
+
+const updateEmpRole = () => {
+  inquirer
+    .prompt([
+      {
+        name: "id",
+        type: "input",
+        message: "What is your employee ID?",
+      },
+      {
+        name: "role",
+        type: "input",
+        message: "What is your new role ID?",
+      },
+    ])
+    .then((answers) => {
+      const query = "UPDATE employee SET role_id = ? WHERE id = ?";
+      connection.query(query, [answers.role, answers.id], (err, results) => {
+        if (err) throw err;
+        console.log(results);
+        badCompany();
+      });
+    })
+    .catch((err) => {
+      throw err;
+    });
+};
